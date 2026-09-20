@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CCEA GCSE Digital Technology — Bubble Sort Practice</title>
+<style>
+:root{--ink:#172033;--muted:#667085;--line:#cbd5e1;--panel:#f8fafc;--accent:#155eef;--good:#067647;--bad:#b42318;--warn:#b54708}
+*{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:#f3f6fa}
+header{background:#fff;border-bottom:1px solid #dbe2ea;padding:18px 20px}
+header .wrap,main{max-width:980px;margin:auto} h1{font-size:1.55rem;margin:0 0 5px} header p{margin:0;color:var(--muted)}
+main{padding:22px 16px 50px}.topbar,.card{background:#fff;border:1px solid #d9e1ea;border-radius:10px}
+.topbar{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:12px 16px;margin-bottom:16px;flex-wrap:wrap}
+.progress{font-weight:700}.score{color:var(--muted)}.card{padding:24px}
+.badge{display:inline-block;font-weight:700;font-size:.8rem;padding:5px 9px;border-radius:999px;background:#eef4ff;color:#1849a9;margin-bottom:12px}
+h2{font-size:1.25rem;margin:0 0 10px}.instruction{line-height:1.5;margin:0 0 18px}
+.array-label{font-weight:700;margin:18px 0 7px}.array{display:flex;flex-wrap:wrap;gap:0;margin:0 0 18px}
+.cell{width:72px;min-height:52px;border:1px solid #667085;margin-left:-1px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;background:white}
+.array .cell:first-child{margin-left:0}.work{border-top:2px solid #344054;padding-top:18px;margin-top:20px}
+.pass{padding:14px 0;border-bottom:1px solid #e4e7ec}.pass-title{font-size:1.05rem;font-weight:700;margin-bottom:9px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.swap-count{font-size:.9rem;font-weight:normal;color:#475467}.controls{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+button{border:0;border-radius:7px;padding:11px 15px;font-size:1rem;font-weight:700;cursor:pointer;background:#e9eef5;color:#172033}
+button.primary{background:var(--accent);color:white}button:disabled{opacity:.45;cursor:not-allowed}
+.choice{min-width:72px;min-height:52px;border:1px solid #667085;background:#fff;border-radius:0;font-size:1.1rem}
+.choice.current-pair{background:#fff7d6;border:2px solid #b54708;position:relative;z-index:1}.choice.selected{outline:3px solid #155eef;outline-offset:2px;background:#eff4ff}.choice.locked{background:#f2f4f7;color:#667085}
+.feedback{min-height:25px;margin:12px 0 0;font-weight:700}.good{color:var(--good)}.bad{color:var(--bad)}.note{color:var(--muted);font-size:.93rem;line-height:1.45}
+.exam-grid{display:grid;grid-template-columns:100px 1fr 135px;gap:9px 10px;align-items:center;margin-top:16px}
+.exam-row{display:contents}.exam-label{font-weight:700}.inputs{display:flex;min-width:0}.inputs input{width:64px;min-width:0;height:46px;border:1px solid #667085;margin-left:-1px;text-align:center;font-size:1rem}.inputs input:first-child{margin-left:0}
+.swap-input{width:80px;height:42px;border:1px solid #98a2b3;border-radius:5px;padding:5px;font-size:1rem}
+.result{padding:18px;border-radius:8px;background:#f8fafc;margin-top:16px}.hidden{display:none!important}
+footer{text-align:center;color:#667085;font-size:.85rem;margin-top:18px}
+@media(max-width:620px){.card{padding:17px}.cell{width:58px}.exam-grid{grid-template-columns:70px 1fr}.exam-row{display:contents}.swapbox{grid-column:2}.inputs input{width:20%;}.topbar{align-items:flex-start}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>Bubble Sort Practice</h1><p>CCEA GCSE Digital Technology — Unit 4 practice</p></div></header>
+<main>
+<div class="topbar"><div class="progress" id="progress">Question 1 of 10</div><div class="score" id="score">Score: 0</div></div>
+<section class="card" id="app"></section>
+<footer>Practice activity — questions are original and designed to reflect pass-by-pass bubble sort skills. • Version 6</footer>
+</main>
+<script>
+const questions=[
+ {a:[7,3,9,2,5],dir:"asc",mode:"guided"},
+ {a:[14,8,11,3,9],dir:"asc",mode:"guided"},
+ {a:[22,18,23,17,20],dir:"desc",mode:"guided"},
+ {a:[31,12,27,19,6],dir:"asc",mode:"guided"},
+ {a:[42,16,35,21,9],dir:"asc",mode:"pass"},
+ {a:[64,71,58,69,62],dir:"asc",mode:"pass"},
+ {a:[19,22,23,24,25],dir:"desc",mode:"pass"},
+ {a:[155,152,156,151,153],dir:"asc",mode:"pass"},
+ {a:[38,17,42,26,11],dir:"asc",mode:"exam"},
+ {a:[45,51,39,48,36],dir:"desc",mode:"exam"}
+];
+let qi=0,total=0,awarded=false;
+const app=document.getElementById("app"), prog=document.getElementById("progress"), score=document.getElementById("score");
+function shouldSwap(x,y,dir){return dir==="asc"?x>y:x<y}
+function solution(start,dir){
+ let a=[...start], rows=[];
+ for(let p=0;p<a.length-1;p++){let swaps=0;
+   for(let i=0;i<a.length-1-p;i++) if(shouldSwap(a[i],a[i+1],dir)){[a[i],a[i+1]]=[a[i+1],a[i]];swaps++}
+   rows.push({arr:[...a],swaps});
+   if(swaps===0) break;
+ }
+ return rows;
+}
+function arrHTML(a){return `<div class="array">${a.map(v=>`<div class="cell">${v}</div>`).join("")}</div>`}
+function header(q){
+ const direction=q.dir==="asc"?"smallest to largest (ascending)":"largest to smallest (descending)";
+ const label=q.mode==="exam"?"EXAM MODE":q.mode==="pass"?"PASS MODE":"GUIDED MODE";
+ return `<span class="badge">${label}</span><h2>Sort the data ${direction}</h2><p class="instruction">Using a <strong>Bubble Sort</strong>, demonstrate how the data would be organised during the sorting process. Show clearly the array content after each pass.</p><div class="array-label">Starting array</div>${arrHTML(q.a)}`;
+}
+function render(){
+ awarded=false; prog.textContent=`Question ${qi+1} of 10`; score.textContent=`Score: ${total}`;
+ const q=questions[qi]; app.innerHTML=header(q)+`<div id="work" class="work"></div>`;
+ if(q.mode==="guided") guided(q); else if(q.mode==="pass") passMode(q); else exam(q);
+}
+function finishQuestion(ok,msg){
+ if(ok&&!awarded){total++;awarded=true;score.textContent=`Score: ${total}`}
+ const f=document.getElementById("feedback"); f.className="feedback "+(ok?"good":"bad");f.textContent=msg;
+ let b=document.getElementById("next"); if(!b){b=document.createElement("button");b.id="next";b.className="primary";b.textContent=qi===9?"View results":"Next question";b.onclick=next;f.after(b)}
+}
+function next(){if(qi<9){qi++;render()}else results()}
+function guided(q){
+ let a=[...q.a],p=0,i=0,swaps=0,rows=[],selected=null;
+ const strongGuide = true;
+ const w=document.getElementById("work");
+ w.innerHTML=`<p class="note">${strongGuide ? "Work through the comparisons from left to right. The <strong>highlighted pair</strong> is the pair you must decide on. Choose <strong>Swap</strong> by selecting both highlighted values, or choose <strong>No swap</strong>." : "Work through each comparison from left to right. Select the two adjacent values when they should swap; otherwise choose <strong>No swap</strong>. You must finish each comparison before moving on."} Incorrect actions are stopped.</p><div id="history"></div><div id="current"></div><div id="feedback" class="feedback"></div>`;
+ function draw(){
+   const end=a.length-1-p;
+   if(p>=a.length-1){finishQuestion(true,"Complete — all passes finished correctly.");return}
+   const cur=document.getElementById("current");
+   cur.innerHTML=`<div class="pass-title">Pass ${p+1} <span class="swap-count">Swaps so far: ${swaps}</span></div>
+   <div class="array">${a.map((v,k)=>`<button type="button" class="choice ${k>=end+1?'locked':''} ${strongGuide && (k===i || k===i+1)?'current-pair':''}" data-k="${k}" ${k>=end+1?'disabled':''}>${v}</button>`).join("")}</div>
+   ${strongGuide?`<div class="note"><strong>Compare:</strong> ${a[i]} and ${a[i+1]}</div>`:""}
+   <div class="controls"><button id="noswap">No swap</button></div>`;
+   cur.querySelectorAll(".choice").forEach(b=>b.addEventListener("click",()=>pick(+b.dataset.k)));
+   document.getElementById("noswap").onclick=noSwap;
+ }
+ function pick(k){
+   const f=document.getElementById("feedback");f.textContent="";
+   if(selected===null){selected=k;document.querySelector(`[data-k="${k}"]`).classList.add("selected");return}
+   if(Math.abs(selected-k)!==1){f.className="feedback bad";f.textContent="Only adjacent values can be compared.";selected=null;draw();return}
+   const left=Math.min(selected,k), right=left+1;
+   if(left!==i){f.className="feedback bad";f.textContent="That is not the next comparison in this pass.";selected=null;draw();return}
+   if(!shouldSwap(a[left],a[right],q.dir)){f.className="feedback bad";f.textContent="Those values should not swap.";selected=null;draw();return}
+   [a[left],a[right]]=[a[right],a[left]];swaps++;i++;selected=null;advance();
+ }
+ function noSwap(){
+   const f=document.getElementById("feedback");
+   if(shouldSwap(a[i],a[i+1],q.dir)){f.className="feedback bad";f.textContent="A swap is required for this comparison.";return}
+   i++;advance();
+ }
+ function advance(){
+   const comparisons=a.length-1-p;
+   if(i>=comparisons){
+     const completedSwaps=swaps;
+     rows.push({arr:[...a],swaps:completedSwaps});
+     p++;i=0;swaps=0;
+     document.getElementById("history").innerHTML=rows.map((r,j)=>`<div class="pass"><div class="pass-title">Pass ${j+1} <span class="swap-count">Swaps: ${r.swaps}</span></div>${arrHTML(r.arr)}</div>`).join("");
+     if(completedSwaps===0 || p>=a.length-1){
+       document.getElementById("current").innerHTML="";
+       finishQuestion(true,completedSwaps===0?"Complete — the confirming pass made 0 swaps, so the list is sorted.":"Complete — the final required pass is finished and the list is sorted.");
+       return;
+     }
+   }
+   draw();
+ }
+ draw();
+}
+function passMode(q){
+ const sol=solution(q.a,q.dir);let a=[...q.a],p=0,swaps=0,selected=null,history=[];
+ const w=document.getElementById("work");
+ w.innerHTML=`<p class="note">Complete the whole pass yourself. There is <strong>no feedback during the pass</strong>. When you think the pass is finished, enter the number of swaps and check it.</p><div id="history"></div><div id="current"></div><div id="feedback" class="feedback"></div>`;
+ function draw(){
+  if(p>=sol.length){finishQuestion(true,"Complete — the list is sorted.");return}
+  document.getElementById("current").innerHTML=`<div class="pass-title">Pass ${p+1}</div>
+  <div class="array">${a.map((v,k)=>`<button type="button" class="choice" data-k="${k}">${v}</button>`).join("")}</div>
+  <div class="controls"><label>Swaps in this pass: <input id="swapn" class="swap-input" type="number" min="0" max="20"></label><button id="check" class="primary">Check pass</button><button id="reset">Reset pass</button></div>`;
+  document.querySelectorAll(".choice").forEach(b=>b.onclick=()=>pick(+b.dataset.k));
+  document.getElementById("check").onclick=check;document.getElementById("reset").onclick=()=>{a=p? [...history[p-1].arr]:[...q.a];swaps=0;selected=null;draw()};
+ }
+ function pick(k){
+  if(selected===null){selected=k;document.querySelector(`[data-k="${k}"]`).classList.add("selected");return}
+  if(Math.abs(selected-k)===1){let l=Math.min(selected,k);[a[l],a[l+1]]=[a[l+1],a[l]];swaps++}
+  selected=null;draw();
+ }
+ function check(){
+  const n=Number(document.getElementById("swapn").value),target=sol[p],f=document.getElementById("feedback");
+  const ok=a.every((v,k)=>v===target.arr[k])&&n===target.swaps;
+  if(!ok){f.className="feedback bad";f.textContent="That pass is not correct yet. Review the order and swap count, then try again.";return}
+  f.textContent="";history.push({arr:[...a],swaps:target.swaps});p++;
+  document.getElementById("history").innerHTML=history.map((r,j)=>`<div class="pass"><div class="pass-title">Pass ${j+1} <span class="swap-count">Swaps: ${r.swaps}</span></div>${arrHTML(r.arr)}</div>`).join("");
+  if(target.swaps===0){
+    document.getElementById("current").innerHTML="";
+    finishQuestion(true,"Complete — this pass made 0 swaps, so the list is sorted.");
+    return;
+  }
+  draw();
+ }
+ draw();
+}
+function exam(q){
+ const sol=solution(q.a,q.dir),n=q.a.length,w=document.getElementById("work");
+ w.innerHTML=`<p class="note"><strong>No checking until the end.</strong> Enter the array after every pass and the number of swaps made in that pass.</p>
+ <div class="exam-grid">${sol.map((r,p)=>`<div class="exam-row"><div class="exam-label">Pass ${p+1}</div><div class="inputs">${Array.from({length:n},(_,k)=>`<input inputmode="numeric" aria-label="Pass ${p+1}, value ${k+1}" data-p="${p}" data-k="${k}">`).join("")}</div><div class="swapbox">Swaps: <input class="swap-input" inputmode="numeric" data-s="${p}" aria-label="Pass ${p+1} swap count"></div></div>`).join("")}</div>
+ <div class="controls"><button id="submit" class="primary">Check complete answer</button></div><div id="feedback" class="feedback"></div><div id="detail"></div>`;
+ document.getElementById("submit").onclick=()=>{
+   let correct=0,details=[];
+   sol.forEach((r,p)=>{
+     const vals=[...document.querySelectorAll(`[data-p="${p}"]`)].map(x=>Number(x.value));
+     const sn=Number(document.querySelector(`[data-s="${p}"]`).value);
+     const ok=vals.every((v,k)=>v===r.arr[k])&&sn===r.swaps;if(ok)correct++;
+     details.push(`<div class="pass"><strong>Pass ${p+1}: ${ok?"✓ Correct":"✗ Check this pass"}</strong>${!ok?`<div class="note">Expected: ${r.arr.join(" | ")} &nbsp; — &nbsp; Swaps: ${r.swaps}</div>`:""}</div>`);
+   });
+   document.getElementById("detail").innerHTML=details.join("");
+   finishQuestion(correct===sol.length,correct===sol.length?"Excellent — every pass and swap count is correct.":`${correct} of ${sol.length} passes are correct. Review the marked passes and try the complete question again.`);
+ };
+}
+function results(){
+ prog.textContent="Practice complete";score.textContent=`Final score: ${total}/10`;
+ app.innerHTML=`<span class="badge">RESULTS</span><h2>Bubble Sort Practice Complete</h2><div class="result"><p style="font-size:1.5rem;margin-top:0"><strong>${total} / 10</strong></p><p>${total>=8?"Strong result. Keep practising the exam-style pass traces so the method is secure.":total>=5?"Good progress. Revisit the pass-by-pass questions and pay close attention to the direction of the sort.":"Work through the guided questions again before returning to Exam Mode."}</p></div><div class="controls"><button class="primary" id="again">Start again</button></div>`;
+ document.getElementById("again").onclick=()=>{qi=0;total=0;render()};
+}
+render();
+</script>
+</body>
+</html>
